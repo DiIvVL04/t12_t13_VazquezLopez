@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="col">
+            <div class="row">
+                <div class="col-6">
+                    <h1>Bienvenidos a mi OnePage</h1>
+                    <p>Esta página funciona cargando elementos con el evento scroll</p>
+                </div>
+                <div class="col-6">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkuVrQPv3ewlu4XvmFqpV9WK7XOxG8o6ThqQ&s" alt="esto es una imagen" class="img-fluid"/>
+                </div>
+            </div>
+            <br>
+            <div class="row" id="tarjetas">
+                <!--Aqui voy a cargar mis cards-->
+                <div class="card col-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            Título de la tarjeta por defecto
+                        </h5>
+                        <img src="https://media.tenor.com/PZxZZLm-hPkAAAAM/homer-simpson.gif" alt="utez" class="img-fluid"/>
+                        <p class="card-text">
+                            Texto por defecto de la tarjeta.
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ducimus, unde debitis maiores architecto error reiciendis rerum aut itaque delectus fugiat repellendus, laboriosam ea sapiente ab quia quo aspernatur nihil facilis!
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Porro, et quaerat illum voluptatum sint vitae odit aliquid deserunt, qui, odio repudiandae dolores atque tempore exercitationem omnis! Beatae officia ex iure?
+                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ratione maxime commodi id mollitia! Sit illum nesciunt cumque quas deserunt ipsam, voluptates architecto cum voluptate voluptatem perspiciatis iure quaerat dolorum natus?
+                            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Temporibus reprehenderit nihil accusantium dolor perspiciatis, cupiditate, laudantium magnam sit deleniti necessitatibus odit harum distinctio qui ipsum! Vero ratione cumque itaque earum.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        var i = 1;
+
+        function loadCards(){
+            console.log("Se detectó el final de la página");
+            
+            for (let index = 0; index < 5; index++) {
+                if (i>100) {
+                    break;
+                }
+
+                //Vamos a hacer la logica de un objeto con propiedades en JS
+                var object = {
+                title: "Card número " + i,
+                text: "Texto dummy de la card: " + i,
+                image: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmtkYXBsMzI4ODQ2czNvc21vbWl1eWQ3cWI0cmpubW9mcmo3ZzBmcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/SajdfSNg6f8rK/giphy.gif"
+            }
+
+            i++;
+
+            //Crear nuestra html con JS
+            var card = document.createElement("div");
+            card.setAttribute("class", "card col-4");
+
+            var body = document.createElement("div");
+            body.setAttribute("class", "card-body");
+
+            var h5 = document.createElement("h5");
+            h5.setAttribute("class", "card-title");
+            h5.innerHTML = object.title;
+
+            var p = document.createElement("p");
+            p.setAttribute("class","card-text");
+            p.innerHTML=object.text;
+
+            var img = document.createElement("img");
+            img.setAttribute("src",object.image);
+            img.setAttribute("class","img-fluid")
+
+            body.appendChild(h5);
+            body.appendChild(p);
+            body.appendChild(img);
+            card.appendChild(body);
+
+            document.getElementById("tarjetas").appendChild(card);
+                
+            }
+
+            
+            
+        }
+
+        window.addEventListener('scroll', ()=>{
+            if((window.innerHeight + window.scrollY) >= document.body.offsetHeight){
+                loadCards();
+            }
+        });
+    </script>
+</body>
+</html>
