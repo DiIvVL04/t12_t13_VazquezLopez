@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar alumno</title>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container">
+        <div class="col">
+            <div class="row">
+
+                <div id="spinner" class="text-center col" style="display: block;">
+                    <div class="spinner-border text-primary" role="status">
+
+                    </div>
+                    <span>Cargando...</span>
+                </div>
+                
+                
+                <!--El formulario-->
+                <div class="col-6 mt-3">
+                    <h1 id="formTitle">Agregar alumno</h1>
+                    <form method="post" id="alumnoForm">
+                        {% csrf_token %}
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control">
+
+                        <label for="apellido">Apellido</label>
+                        <input type="text" id="apellido" name="apellido" class="form-control">
+
+                        <label for="edad">Edad</label>
+                        <input type="number" id="edad" name="edad" class="form-control">
+
+                        <label for="matricula">Matrícula</label>
+                        <input type="text" id="matricula" name="matricula" class="form-control">
+
+                        <label for="correo">Correo</label>
+                        <input type="email" id="correo" name="correo" class="form-control">
+
+                        <input type="hidden" id="id" name="id">
+
+                        <button class="btn btn-primary" type="submit">Agregar</button>
+                    </form>
+                    <div>
+                        <p id="mensaje"></p>
+                    </div>
+                </div>
+
+                <!--La vista de productos-->
+                <div class="col-6 mt-3">
+                    <h1>Ver alumnos</h1>
+                    <div class="row" id="alumnos"></div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toogleSpiner(show){
+            document.getElementById('spinner').style.display
+            = show ? 'block' : 'none';
+        }
+    </script>
+
+    <script>
+        //Vamos a usar el formulario para hacer un request post a mi api
+        var form = document.getElementById('alumnoForm');
+        //En este caso el event es el comportamiento del formulario
+        form.addEventListener('submit', function(event){
+            //Para evitar que se mande un formulario en este contexto
+            event.preventDefault();
+
+            //Obtener los datos del formulario
+            let formData = new FormData(this);
+            //En este contexto el valor es el dato del input y la key es el name
+            //Convertir los datos a Json
+            let jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            //Enviar estos datos al servidor
+            //fetch
+            toogleSpiner(true)
+            fetch('/alumnos/api/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken() //<-- esta funcion se hará mas adelante
+                }, 
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('mensaje').innerText = 'Registro exitoso';
+                //Repintar los elementos
+                cargarAlumnos();
+            })
+            .catch(error => console.error('Error: ', error))
+            .finally(() => toogleSpiner(false))
+        });
+
+        //funcion para obtener el token CSRF de la cookie de Django
+        function getCSRFToken(){
+            let cookieValue = null;
+            let cookies = document.cookie.split(';');
+            for(let i=0; i<cookies.length; i++){
+                let cookie = cookies[i].trim();
+                if(cookie.startsWith('csrftoken=')){
+                    cookieValue = cookie.substring('csrftoken='.length,cookie.length);
+                    break;
+                }
+            }
+            return cookieValue;
+        }
+
+        function cargarAlumnos() {
+            toogleSpiner(true);
+            fetch('/alumnos/api/')
+                .then(response => response.json())
+                .then(data => {
+                    let alumnosDiv = document.getElementById('alumnos');
+                    alumnosDiv.innerHTML = "";
+                    data.forEach(alumno => {
+                        alumnosDiv.innerHTML += `
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="row">Nombre</th>
+                                        <th scope="row">Apellido</th>
+                                        <th scope="row">Edad</th>
+                                        <th scope="row">Matricula</th>
+                                        <th scope="row">Correo</th>
+                                        <th scope="row">Opciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>${alumno.nombre}</td>
+                                        <td>${alumno.apellido}</td>
+                                        <td>${alumno.edad}</td>
+                                        <td>${alumno.matricula}</td>
+                                        <td>${alumno.correo}</td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-warning btn-sm" onclick="editarAlumno(${alumno.id})">
+                                                    Editar
+                                                </button>
+                                                <button type="button" class="btn btn-danger" onclick="eliminarAlumno(${alumno.id})">
+                                                    Eliminar
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>    
+                            </table>
+                        `
+                    });
+                })
+                .catch(error => console.error('ERROR:', error))
+                .finally(() => toogleSpiner(false));
+        }
+
+        function eliminarAlumno(id) {
+        toogleSpiner(true);
+        fetch(`/alumnos/api/${id}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(() => {
+            cargarAlumnos();
+        })
+        .catch(error => console.error("Error:", error))
+        .finally(() => toogleSpiner(false));
+        cargarAlumnos();
+    }
+
+    function editarAlumno(id) {
+    toogleSpiner(true);
+
+    fetch(`/alumnos/api/${id}/`)
+        .then(response => response.json())
+        .then(alumno => {
+            console.log("Alumno recibido:", alumno);
+
+            document.getElementById('id').value = alumno.id || ''; 
+            document.getElementById('nombre').value = alumno.nombre || '';
+            document.getElementById('apellido').value = alumno.apellido || '';
+            document.getElementById('edad').value = alumno.edad || '';
+            document.getElementById('matricula').value = alumno.matricula || '';
+            document.getElementById('correo').value = alumno.correo || '';
+
+            document.getElementById('formTitle').innerText = "Editar alumno";
+            let submitButton = document.querySelector("#alumnoForm button[type='submit']");
+            submitButton.innerText = "Actualizar";
+
+            form.onsubmit = function (event) {
+                event.preventDefault();
+                actualizarAlumno();
+            };
+        })
+        .catch(error => console.error('ERROR:', error))
+        .finally(() => toogleSpiner(false));
+}
+
+function actualizarAlumno() {
+    let formData = new FormData(form);
+    let jsonData = {};
+    formData.forEach((value, key) => jsonData[key] = value);
+
+    fetch(`/alumnos/api/${jsonData.id}/`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(jsonData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        form.reset();
+        document.getElementById('formTitle').innerText = "Agregar alumno";
+        document.querySelector("#alumnoForm button[type='submit']").innerText = "Agregar";
+        form.onsubmit = agregarAlumno;
+        cargarAlumnos();
+    })
+    .catch(error => console.error('ERROR:', error));
+}
+
+cargarAlumnos();
+
+    </script>
+</body>
+</html>
